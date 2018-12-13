@@ -450,11 +450,6 @@ class ControllerExtensionModuleMailchimp extends Controller {
 		$this->getList();
 	}
 
-	public function eventTest(&$route, &$data) 
-	{
-		var_dump($route);
-	}
-	
 	public function syncStore()
 	{
 		$this->load->language('extension/module/mailchimp');
@@ -509,6 +504,16 @@ class ControllerExtensionModuleMailchimp extends Controller {
 		}
 
 		$this->getList();
+	}
+
+	public function addComplementaryDataOnConfigPage(&$route, &$data, &$lascou) 
+	{
+		$this->load->language('extension/module/mailchimp');
+		
+		$data['entry_city'] = $this->language->get('entry_city');
+		$data['entry_zip'] = $this->language->get('entry_zip');
+		$data['config_city'] = $this->config->get('config_city');
+		$data['config_zip'] = $this->config->get('config_zip');
 	}
 
 	public function rewrite($link) 
@@ -592,20 +597,20 @@ class ControllerExtensionModuleMailchimp extends Controller {
 		$data['totalCarts'] = $this->model_extension_module_mailchimp->getTotalCarts();
 		$data['totalListContacts'] = $data['totalCustomers'];
 		
-		$data['sycronizedProducts'] = $mailchimp->countSynchronizedProducts('default');
-		$data['syncronizedStores'] = $mailchimp->countSynchronizedStores();
-		$data['syncronizedCustomers'] = $mailchimp->countSynchronizedCustomers('default');
-		$data['syncronizedOrders'] = $mailchimp->countSynchronizedOrders('default');
-		$data['syncronizedCarts'] = $mailchimp->countSynchronizedCarts('default');
-		$data['syncronizedLists'] =  0;
+		$data['synchronizedProducts'] = $mailchimp->countSynchronizedProducts('default');
+		$data['synchronizedStores'] = $mailchimp->countSynchronizedStores();
+		$data['synchronizedCustomers'] = $mailchimp->countSynchronizedCustomers('default');
+		$data['synchronizedOrders'] = $mailchimp->countSynchronizedOrders('default');
+		$data['synchronizedCarts'] = $mailchimp->countSynchronizedCarts('default');
+		$data['synchronizedLists'] =  0;
 		
 		$listId = $this->model_setting_setting->getSettingValue('module_mailchimp_default_list_id');
 		if ($listId)
 		{
 			$listContacts = $mailchimp->countListContacts($listId);
 			if($listContacts) {
-				$data['syncronizedLists'] = 1;
-				$data['syncronizedListsContacts'] = $listContacts;
+				$data['synchronizedLists'] = 1;
+				$data['synchronizedListsContacts'] = $listContacts;
 			}
 		}
 
@@ -676,7 +681,17 @@ class ControllerExtensionModuleMailchimp extends Controller {
 	public function install() 
 	{
 		$this->load->model('setting/extension');
+
+		$this->load->model('setting/event');
+
 		$this->model_setting_extension->install('module', 'mailchimp');
+
+		if (!$this->model_setting_event->getEventByCode('mailchimp_add_complementary_data')) {
+			$code = "mailchimp_add_complementary_data";
+			$trigger = "admin/view/setting/setting/before";
+			$action = "extension/module/mailchimp/addComplementaryDataOnConfigPage";
+			$this->model_setting_event->addEvent($code, $trigger, $action);
+		}
 	}
 
 	public function uninstall() 
@@ -686,5 +701,8 @@ class ControllerExtensionModuleMailchimp extends Controller {
 
 		$this->load->model('setting/setting');
 		$this->model_setting_setting->deleteSetting('module_mailchimp_status');
+
+		$this->load->model('setting/event');
+		$this->model_setting_event->deleteEventByCode('mailchimp_add_complementary_data');
 	}
 }
