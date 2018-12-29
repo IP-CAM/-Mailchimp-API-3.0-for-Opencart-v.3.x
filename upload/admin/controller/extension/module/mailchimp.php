@@ -240,7 +240,7 @@ class ControllerExtensionModuleMailchimp extends Controller {
 					'lines' => []
 				];
 
-				$cartProducts = $this->model_extension_module_mailchimp->getCartProducts($cart['session_id']);
+				$cartProducts = $this->cart->getProducts();
 				
 				foreach ($cartProducts AS $product) {
 					$cartData['lines'][] = [
@@ -692,6 +692,55 @@ class ControllerExtensionModuleMailchimp extends Controller {
 			$action = "extension/module/mailchimp/addComplementaryDataOnConfigPage";
 			$this->model_setting_event->addEvent($code, $trigger, $action);
 		}
+
+		if (!$this->model_setting_event->getEventByCode('mailchimp_add_product')) {
+			$code = "mailchimp_add_product";
+			$trigger = "admin/model/catalog/product/addProduct/after";
+			$action = "extension/module/mailchimp/productTrigger";
+			$this->model_setting_event->addEvent($code, $trigger, $action);
+		}
+
+		if (!$this->model_setting_event->getEventByCode('mailchimp_edit_product')) {
+			$code = "mailchimp_edit_product";
+			$trigger = "admin/model/catalog/product/editProduct/after";
+			$action = "extension/module/mailchimp/productTrigger";
+			$this->model_setting_event->addEvent($code, $trigger, $action);
+		}
+
+		if (!$this->model_setting_event->getEventByCode('mailchimp_add_customer')) {
+			$code = "mailchimp_add_customer";
+			$trigger = "catalog/model/account/customer/addCustomer/after";
+			$action = "extension/module/mailchimp/customerTrigger";
+			$this->model_setting_event->addEvent($code, $trigger, $action);
+		}
+
+		if (!$this->model_setting_event->getEventByCode('mailchimp_edit_customer')) {
+			$code = "mailchimp_edit_customer";
+			$trigger = "catalog/model/account/customer/editCustomer/after";
+			$action = "extension/module/mailchimp/customerTrigger";
+			$this->model_setting_event->addEvent($code, $trigger, $action);
+		}
+
+		if (!$this->model_setting_event->getEventByCode('mailchimp_add_cart')) {
+			$code = "mailchimp_add_cart";
+			$trigger = "catalog/controller/checkout/cart/add/after";
+			$action = "extension/module/mailchimp/cartTrigger";
+			$this->model_setting_event->addEvent($code, $trigger, $action);
+		}
+
+		if (!$this->model_setting_event->getEventByCode('mailchimp_edit_cart')) {
+			$code = "mailchimp_edit_cart";
+			$trigger = "catalog/controller/checkout/cart/edit/before";
+			$action = "extension/module/mailchimp/cartTrigger";
+			$this->model_setting_event->addEvent($code, $trigger, $action);
+		}
+
+		if (!$this->model_setting_event->getEventByCode('mailchimp_remove_cart')) {
+			$code = "mailchimp_remove_cart";
+			$trigger = "catalog/controller/checkout/cart/remove/after";
+			$action = "extension/module/mailchimp/cartTrigger";
+			$this->model_setting_event->addEvent($code, $trigger, $action);
+		}
 	}
 
 	public function uninstall() 
@@ -704,5 +753,12 @@ class ControllerExtensionModuleMailchimp extends Controller {
 
 		$this->load->model('setting/event');
 		$this->model_setting_event->deleteEventByCode('mailchimp_add_complementary_data');
+		$this->model_setting_event->deleteEventByCode('mailchimp_add_customer');
+		$this->model_setting_event->deleteEventByCode('mailchimp_edit_customer');
+		$this->model_setting_event->deleteEventByCode('mailchimp_add_product');
+		$this->model_setting_event->deleteEventByCode('mailchimp_edit_product');
+		$this->model_setting_event->deleteEventByCode('mailchimp_add_cart');
+		$this->model_setting_event->deleteEventByCode('mailchimp_edit_cart');
+		$this->model_setting_event->deleteEventByCode('mailchimp_remove_cart');
 	}
 }

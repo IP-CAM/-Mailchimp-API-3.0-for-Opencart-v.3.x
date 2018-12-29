@@ -61,7 +61,26 @@ class Mailchimp
         $response = $this->post('/lists/' . $listId, $members);
 
         return $response;
-    } 
+    }
+    
+    public function syncListMember($listId, array $member)
+    {
+        $hash = md5($member['email']);
+        
+        $response = $this->patch('/lists/' . $listId . '/members/' . $hash, $member);
+        
+        if ($response->status == 404) {
+            $response = $this->post('/lists/' . $listId . '/members/', $member);
+        }
+        
+        return $response;
+
+
+        
+        $response = $this->post('/lists/' . $listId, $members);
+
+        return $response;
+    }
 
     public function syncCustomer($storeId, array $customerData)
     {
@@ -90,7 +109,6 @@ class Mailchimp
 
     public function syncOrder($storeId, array $orderData)
     {
-        
         $response = $this->patch('/ecommerce/stores/' . $storeId . '/orders/' . $orderData['id'], $orderData);
         
         if ($response->status == 404) {
@@ -177,9 +195,19 @@ class Mailchimp
         return $response->total_items;
     }
 
+    public function deleteCart($storeId, $cartId)
+    {
+        return $this->delete('/ecommerce/stores/' . $storeId . '/carts/' . $cartId);
+    }
+
     public function post($url, $data)
     {
         return $this->sendRequest($url, $data, 'POST');
+    }
+
+    public function delete($url)
+    {
+        return $this->sendRequest($url, [], 'DELETE');
     }
 
     public function patch($url, $data)
@@ -216,17 +244,28 @@ class Mailchimp
             }
         }
 
+        if ($method == 'DELETE') {
+            curl_setopt($channel, CURLOPT_URL, $url);
+            curl_setopt($channel, CURLOPT_MAXREDIRS, 3);
+            curl_setopt($channel, CURLOPT_TIMEOUT, 5);
+            curl_setopt($channel, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+            curl_setopt($channel, CURLOPT_CUSTOMREQUEST, 'DELETE');
+        }
+        
+
         if ($method == 'PATCH') {
             curl_setopt($channel, CURLOPT_URL, $url);
             curl_setopt($channel, CURLOPT_ENCODING, "");
             curl_setopt($channel, CURLOPT_MAXREDIRS, 3);
-            curl_setopt($channel, CURLOPT_TIMEOUT, 5);
+            curl_setopt($channel, CURLOPT_TIMEOUT, 10);
             curl_setopt($channel, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
             curl_setopt($channel, CURLOPT_CUSTOMREQUEST, 'PATCH');
             if(isset($data)) {
                 curl_setopt($channel, CURLOPT_POSTFIELDS, json_encode($data));
             }
         }
+
+        
 
         if ($method == 'GET') {
             if(isset($data) && is_array($data)) {
