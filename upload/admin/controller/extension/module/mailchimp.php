@@ -121,9 +121,7 @@ class ControllerExtensionModuleMailchimp extends Controller {
 		$shippedStatuses = [
 			19, 18, 3, 5
 		];
-
 		
-
 		$orders = $this->model_sale_order->getOrders();
 		$totalOrders = count($orders);
 		$synchronizedOrders = 0;
@@ -740,6 +738,63 @@ class ControllerExtensionModuleMailchimp extends Controller {
 			$trigger = "catalog/controller/checkout/cart/remove/after";
 			$action = "extension/module/mailchimp/cartTrigger";
 			$this->model_setting_event->addEvent($code, $trigger, $action);
+		}
+	}
+
+	public function productTrigger(&$route, &$data, &$output) 
+	{
+		$this->load->model('setting/setting');
+		
+		$this->load->model('tool/image');
+
+		$apiKey = $this->model_setting_setting->getSettingValue('module_mailchimp_api_key');
+
+		if ($apiKey) {
+
+			$product = $data[0];
+			$productId = $output;
+			
+			if (is_null($productId)) {
+				$productId = $data[0];
+				$product = $data[1];
+			}
+
+			if ($this->config->get('config_seo_url')) {
+				$this->url->addRewrite($this);
+			}
+			
+			$image = empty($product['image']) ? 'no_image.png' : $product['image'];
+			
+			$imageUrl = $this->model_tool_image->resize($image, 600, 695);
+
+			// manufacturer_id
+			$productData = [
+				'id'    => (string)$productId,
+				'title' => $product['product_description'][1]['name'],
+				'url' => $this->url->link('product/product', 'product_id=' . $productId),
+				'description' => $product['product_description'][1]['description'],
+				'image_url' => $imageUrl,
+				'variants' => [
+					[
+						'id'    => (string)$productId,
+						'title' => $product['product_description'][1]['name'],
+						'url'   => $this->url->link('product/product', 'product_id=' . $productId),
+						'sku'	=> $product['sku'],
+						'price' => (float)$product['price'],
+						'inventory_quantity' => (int)$product['quantity'],
+						'image_url' => $imageUrl,
+					]
+				]	
+			];
+
+
+			if (!empty($product['manufacturer'])) {
+				$productData['vendor'] = (string)$product['manufacturer'];
+			}
+
+			
+			$mailchimp = new Mailchimp($apiKey);
+			$returnedProduct = $mailchimp->syncProduct('default', $productData);
 		}
 	}
 
