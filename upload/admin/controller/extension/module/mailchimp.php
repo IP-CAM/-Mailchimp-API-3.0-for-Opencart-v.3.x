@@ -739,6 +739,13 @@ class ControllerExtensionModuleMailchimp extends Controller {
 			$action = "extension/module/mailchimp/cartTrigger";
 			$this->model_setting_event->addEvent($code, $trigger, $action);
 		}
+
+		if (!$this->model_setting_event->getEventByCode('mailchimp_add_order_history')) {
+			$code = "mailchimp_add_order_history";
+			$trigger = "catalog/model/checkout/order/addOrderHistory/after";
+			$action = "extension/module/mailchimp/orderTrigger";
+			$this->model_setting_event->addEvent($code, $trigger, $action);
+		}
 	}
 
 	public function productTrigger(&$route, &$data, &$output) 
@@ -815,5 +822,7 @@ class ControllerExtensionModuleMailchimp extends Controller {
 		$this->model_setting_event->deleteEventByCode('mailchimp_add_cart');
 		$this->model_setting_event->deleteEventByCode('mailchimp_edit_cart');
 		$this->model_setting_event->deleteEventByCode('mailchimp_remove_cart');
+		$this->model_setting_event->deleteEventByCode('mailchimp_add_order_history_catalog');
+		$this->model_setting_event->deleteEventByCode('mailchimp_add_order_history_admin');
 	}
 }
