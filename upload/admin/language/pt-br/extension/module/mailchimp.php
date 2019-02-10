@@ -3,13 +3,8 @@
 $_['heading_title']          = 'MailChimp';
 
 // Text
-$_['text_success']           = 'Success: You changed the redirect!';
 $_['text_list']              = 'Sincronizações Disponíveis';
 $_['text_config']            = 'Editando MailChimp';
-$_['text_add']               = 'Add Redirect';
-$_['text_edit']              = 'Edit Redirect';
-$_['text_default']           = 'Default';
-$_['text_extension']         = 'Extensions';
 $_['text_module_disabled']   = 'Este modulo está desativado. É necessário ativá-lo antes de usar';
 
 //Columns
@@ -51,11 +46,8 @@ $_['text_error_sync_products']  = 'Erro ao sincronizar produtos.';
 $_['text_warning_sync_products']  = 'Alerta! Apenas %s de %s produtos foram sincronizados.';
 $_['text_success_sync_products']  = 'Produtos sincronizados com sucesso.';
 
-
-
 // Entry
 $_['entry_api_key']         = 'Api Key';
 $_['entry_status']           = 'Status';
 $_['entry_city']           = 'Cidade';
 $_['entry_zip']           = 'CEP';
-
