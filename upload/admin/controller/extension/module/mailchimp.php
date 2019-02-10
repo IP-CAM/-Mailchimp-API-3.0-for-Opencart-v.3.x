@@ -740,6 +740,14 @@ class ControllerExtensionModuleMailchimp extends Controller {
 			$this->model_setting_event->addEvent($code, $trigger, $action);
 		}
 
+		if (!$this->model_setting_event->getEventByCode('mailchimp_clear_cart')) {
+			$code = "mailchimp_clear_cart";
+			$trigger = "catalog/controller/checkout/success/before";
+			$action = "extension/module/mailchimp/clearCartTrigger";
+			$this->model_setting_event->addEvent($code, $trigger, $action);
+			return 'chamou sa porra';
+		}
+
 		if (!$this->model_setting_event->getEventByCode('mailchimp_add_order_history')) {
 			$code = "mailchimp_add_order_history";
 			$trigger = "catalog/model/checkout/order/addOrderHistory/after";
@@ -822,7 +830,8 @@ class ControllerExtensionModuleMailchimp extends Controller {
 		$this->model_setting_event->deleteEventByCode('mailchimp_add_cart');
 		$this->model_setting_event->deleteEventByCode('mailchimp_edit_cart');
 		$this->model_setting_event->deleteEventByCode('mailchimp_remove_cart');
-		$this->model_setting_event->deleteEventByCode('mailchimp_add_order_history_catalog');
-		$this->model_setting_event->deleteEventByCode('mailchimp_add_order_history_admin');
+		$this->model_setting_event->deleteEventByCode('mailchimp_add_order_history');
+		$this->model_setting_event->deleteEventByCode('mailchimp_clear_cart');
+		
 	}
 }

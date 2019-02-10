@@ -91,6 +91,20 @@ class ControllerExtensionModuleMailchimp extends Controller {
         }    
     }
 
+    public function clearCartTrigger(&$route, &$data) 
+	{
+        $this->load->model('setting/setting');  
+        
+        $apiKey = $this->model_setting_setting->getSettingValue('module_mailchimp_api_key');
+
+        $sessionId = $this->session->getId();
+        
+        if ($apiKey && $sessionId > 0) {
+            $mailchimp = new Mailchimp($apiKey);
+            $mailchimp->deleteCart('default', $sessionId);
+        }    
+    }
+
     public function orderTrigger(&$route, &$data, &$output)
 	{
         $this->load->model('setting/setting');
