@@ -45,7 +45,7 @@ class ControllerExtensionModuleMailchimp extends Controller {
 			$product_specials = $this->model_catalog_product->getProductSpecials($product['product_id']);
 			foreach ($product_specials  as $product_special) {
 				if (($product_special['date_start'] == '0000-00-00' || strtotime($product_special['date_start']) < time()) && ($product_special['date_end'] == '0000-00-00' || strtotime($product_special['date_end']) > time())) {
-					$special = $this->currency->format($product_special['price'], $this->config->get('config_currency'));
+					$special = $product_special['price'];
 					break;
 				}
 			}
@@ -806,7 +806,7 @@ class ControllerExtensionModuleMailchimp extends Controller {
 			$product_specials = $this->model_catalog_product->getProductSpecials($productId);
 			foreach ($product_specials  as $product_special) {
 				if (($product_special['date_start'] == '0000-00-00' || strtotime($product_special['date_start']) < time()) && ($product_special['date_end'] == '0000-00-00' || strtotime($product_special['date_end']) > time())) {
-					$special = $this->currency->format($product_special['price'], $this->config->get('config_currency'));
+					$special = $product_special['price'];
 					break;
 				}
 			}
