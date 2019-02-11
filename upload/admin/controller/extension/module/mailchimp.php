@@ -238,8 +238,8 @@ class ControllerExtensionModuleMailchimp extends Controller {
 					'lines' => []
 				];
 
-				$cartProducts = $this->cart->getProducts();
-				
+				$cartProducts = $cartProducts = $this->model_extension_module_mailchimp->getCartProducts($cart['session_id']);
+
 				foreach ($cartProducts AS $product) {
 					$cartData['lines'][] = [
 						'id' => $product['cart_id'],
@@ -587,28 +587,40 @@ class ControllerExtensionModuleMailchimp extends Controller {
 
 		
 		$apiKey = $this->model_setting_setting->getSettingValue('module_mailchimp_api_key');
-		$mailchimp = new Mailchimp($apiKey);
 		
+		
+			
 		$data['totalProducts'] = $this->model_extension_module_mailchimp->getTotalProducts();
 		$data['totalCustomers'] = $this->model_customer_customer->getTotalCustomers();
 		$data['totalOrders'] = $this->model_sale_order->getTotalOrders();
 		$data['totalCarts'] = $this->model_extension_module_mailchimp->getTotalCarts();
 		$data['totalListContacts'] = $data['totalCustomers'];
 		
-		$data['synchronizedProducts'] = $mailchimp->countSynchronizedProducts('default');
-		$data['synchronizedStores'] = $mailchimp->countSynchronizedStores();
-		$data['synchronizedCustomers'] = $mailchimp->countSynchronizedCustomers('default');
-		$data['synchronizedOrders'] = $mailchimp->countSynchronizedOrders('default');
-		$data['synchronizedCarts'] = $mailchimp->countSynchronizedCarts('default');
+		$data['synchronizedProducts'] = 0;
+		$data['synchronizedStores'] = 0;
+		$data['synchronizedCustomers'] = 0;
+		$data['synchronizedOrders'] = 0;
+		$data['synchronizedCarts'] = 0;
 		$data['synchronizedLists'] =  0;
+		$data['synchronizedLists'] = 0;
+		$data['synchronizedListsContacts'] = 0;
 		
-		$listId = $this->model_setting_setting->getSettingValue('module_mailchimp_default_list_id');
-		if ($listId)
-		{
-			$listContacts = $mailchimp->countListContacts($listId);
-			if($listContacts) {
-				$data['synchronizedLists'] = 1;
-				$data['synchronizedListsContacts'] = $listContacts;
+		if ($apiKey) {
+			$mailchimp = new Mailchimp($apiKey);
+			$data['synchronizedProducts'] = $mailchimp->countSynchronizedProducts('default');
+			$data['synchronizedStores'] = $mailchimp->countSynchronizedStores();
+			$data['synchronizedCustomers'] = $mailchimp->countSynchronizedCustomers('default');
+			$data['synchronizedOrders'] = $mailchimp->countSynchronizedOrders('default');
+			$data['synchronizedCarts'] = $mailchimp->countSynchronizedCarts('default');
+			
+			$listId = $this->model_setting_setting->getSettingValue('module_mailchimp_default_list_id');
+			if ($listId)
+			{
+				$listContacts = $mailchimp->countListContacts($listId);
+				if($listContacts) {
+					$data['synchronizedLists'] = 1;
+					$data['synchronizedListsContacts'] = $listContacts;
+				}
 			}
 		}
 
@@ -745,7 +757,6 @@ class ControllerExtensionModuleMailchimp extends Controller {
 			$trigger = "catalog/controller/checkout/success/before";
 			$action = "extension/module/mailchimp/clearCartTrigger";
 			$this->model_setting_event->addEvent($code, $trigger, $action);
-			return 'chamou sa porra';
 		}
 
 		if (!$this->model_setting_event->getEventByCode('mailchimp_add_order_history')) {
