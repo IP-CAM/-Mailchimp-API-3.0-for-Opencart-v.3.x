@@ -40,10 +40,21 @@ class ControllerExtensionModuleMailchimp extends Controller {
 		$totalProducts = count($products);
 		$synchronizedProducts = 0;
 		foreach($products AS $product) {
+
+			$special = null;
+			$product_specials = $this->model_catalog_product->getProductSpecials($product['product_id']);
+			foreach ($product_specials  as $product_special) {
+				if (($product_special['date_start'] == '0000-00-00' || strtotime($product_special['date_start']) < time()) && ($product_special['date_end'] == '0000-00-00' || strtotime($product_special['date_end']) > time())) {
+					$special = $this->currency->format($product_special['price'], $this->config->get('config_currency'));
+					break;
+				}
+			}
+
 			$manufacturer = $this->model_catalog_manufacturer->getManufacturer($product['manufacturer_id']);
 
 			$image = empty($product['image']) ? 'no_image.png' : $product['image'];
 			$imageUrl = $this->model_tool_image->resize($image, 600, 695);
+			$price = is_null($special) ? $product['price'] : $special;
 
 			// manufacturer_id
 			$productData = [
@@ -58,7 +69,7 @@ class ControllerExtensionModuleMailchimp extends Controller {
 						'title' => $product['name'],
 						'url'   => $this->url->link('product/product', 'product_id=' . $product['product_id']),
 						'sku'	=> $product['sku'],
-						'price' => (float)$product['price'],
+						'price' => (float)$price,
 						'inventory_quantity' => (int)$product['quantity'],
 						'image_url' => $imageUrl,
 					]
@@ -770,6 +781,8 @@ class ControllerExtensionModuleMailchimp extends Controller {
 	public function productTrigger(&$route, &$data, &$output) 
 	{
 		$this->load->model('setting/setting');
+
+		$this->load->model('catalog/product');
 		
 		$this->load->model('tool/image');
 
@@ -789,6 +802,17 @@ class ControllerExtensionModuleMailchimp extends Controller {
 				$this->url->addRewrite($this);
 			}
 			
+			$special = null;
+			$product_specials = $this->model_catalog_product->getProductSpecials($productId);
+			foreach ($product_specials  as $product_special) {
+				if (($product_special['date_start'] == '0000-00-00' || strtotime($product_special['date_start']) < time()) && ($product_special['date_end'] == '0000-00-00' || strtotime($product_special['date_end']) > time())) {
+					$special = $this->currency->format($product_special['price'], $this->config->get('config_currency'));
+					break;
+				}
+			}
+			
+			$price = is_null($special) ? $product['price'] : $special;
+			
 			$image = empty($product['image']) ? 'no_image.png' : $product['image'];
 			
 			$imageUrl = $this->model_tool_image->resize($image, 600, 695);
@@ -806,7 +830,7 @@ class ControllerExtensionModuleMailchimp extends Controller {
 						'title' => $product['product_description'][1]['name'],
 						'url'   => $this->url->link('product/product', 'product_id=' . $productId),
 						'sku'	=> $product['sku'],
-						'price' => (float)$product['price'],
+						'price' => (float)$price,
 						'inventory_quantity' => (int)$product['quantity'],
 						'image_url' => $imageUrl,
 					]
